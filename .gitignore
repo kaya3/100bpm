@@ -56,7 +56,12 @@ local_settings.py
 
 # Flask stuff:
 instance/
+tmp/
 .webassets-cache
+app/sounds/
+config.py
+db_repository/
+app.db
 
 # Scrapy stuff:
 .scrapy

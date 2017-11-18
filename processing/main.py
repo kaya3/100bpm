@@ -25,11 +25,11 @@ BPM = 100.0 #100bpm
 ##FOLDERS
 PRE_AUDIO = "pre_audio"
 POST_SOUNDS = "post_sounds"
-POST_SNARE = "post_percussion"
+POST_SNARE = "post_percussion2"
 
 
 def concatenate_segments(x, onset_samples, pad_duration=0.500):
-    silence = np.zeros(int(pad_duration*sr)) # silence
+    silence = np.zeros(int(pad_duration*SR)) # silence
     frame_sz = min(np.diff(onset_samples))   # every segment has uniform frame size
     i = 0
     len_onsets = len(onset_samples)
@@ -52,7 +52,7 @@ def concatenate_segments_snare(x, onset_samples, pad_duration=0.500):
 def speed_adjust(x_pre, sr):
     onset_env = librosa.onset.onset_strength(x_pre, sr=sr)
     tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr)
-    x_fast = librosa.effects.time_stretch(x_pre, BPM / tempo)
+    x_fast = librosa.effects.time_stretch(x_pre, tempo / BPM)
     return x_fast
     
 def extract_sound(path, song_name):
@@ -67,14 +67,16 @@ def extract_sound(path, song_name):
     #onset_times = librosa.frames_to_time(onset_frames, sr=sr)
     #clicks = librosa.clicks(times=onset_times, length=len(x))
     concatenated_signal = concatenate_segments(x, onset_samples, 0.500)
-    
-    y = concatenated_signal
-    pitches, magnitudes = librosa.piptrack(y, sr=sr)
-    pitches = pitches[magnitudes > np.median(magnitudes)]
-    pitches = [int(a) for (a) in pitches]
-    pitch = int(librosa.hz_to_midi(sp.stats.mode(pitches)[0]))
-    pitched_y = librosa.effects.pitch_shift(y, sr, n_steps=STD_PITCH-pitch)
-    librosa.output.write_wav(POST_SOUNDS+'/'+song_name, pitched_y, sr)
+    print(len(concatenated_signal))
+
+    if (len(concatenated_signal) > 4096): #10000
+        y = concatenated_signal
+        #pitches, magnitudes = librosa.piptrack(y, sr=sr)
+        #pitches = pitches[magnitudes > np.median(magnitudes)]
+        #pitches = [int(a) for (a) in pitches]
+        #pitch = int(librosa.hz_to_midi(sp.stats.mode(pitches)[0]))
+        #pitched_y = librosa.effects.pitch_shift(y, SR, n_steps=STD_PITCH-pitch)
+        librosa.output.write_wav(POST_SOUNDS+'/'+song_name, y, sr)
         
     
 
@@ -102,6 +104,8 @@ def extract_snare(path, song_name):
         
     #x = speed_adjust(x, sr)
     
+    ###quick hack for second wave of files
+    found_i = 0
     x = x[(found_i*main_struct_frame):((found_i+1)*main_struct_frame)]
     print(len(x[(found_i*main_struct_frame):((found_i+1)*main_struct_frame)]))
 
@@ -135,8 +139,8 @@ def main():
             if i > 0:
                 path = os.path.join(subdir, file)
                 print(path)
-                extract_snare(path,file)
-                #extract_sound(path, file)
+                #extract_snare(path,file)
+                extract_sound(path, file)
     
 main()
     

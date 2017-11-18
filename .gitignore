@@ -62,6 +62,7 @@ app/sounds/
 config.py
 db_repository/
 app.db
+json/
 
 # Scrapy stuff:
 .scrapy

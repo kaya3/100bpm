@@ -132,14 +132,14 @@ def generate_song(sound_melody, sound_kick, sound_snare, notes_melody, notes_kic
     audio =  instrumental + snares + kicks
     librosa.output.write_wav(output_filename, audio, SR)
 
-        
-generate_song(
-    "new_post_sounds/01 Somebody (feat. Jeremih).wav",
-    "post_kicks/65 Touchin, Lovin (feat. Nicki Minaj).wav_20.8808708191_25.wav",
-    "post_snares/16 Loin (feat. Dany synthé) [Pilule Violette].wav_9.9791841507_9.wav",
-    [[55, 920, 201]],
-    [50],
-    [20],
-    "melody.wav"
-)
-    
+
+if __name__ == '__main__':
+    generate_song(
+        "new_post_sounds/01 Somebody (feat. Jeremih).wav",
+        "post_kicks/65 Touchin, Lovin (feat. Nicki Minaj).wav_20.8808708191_25.wav",
+        "post_snares/16 Loin (feat. Dany synthé) [Pilule Violette].wav_9.9791841507_9.wav",
+        [[55, 920, 201]],
+        [50],
+        [20],
+        "melody.wav"
+    )

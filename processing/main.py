@@ -17,24 +17,25 @@ CHANNELS = 1
 BYTES_PER_SAMPLE = 2
 SR = 44100
 PAD_DURATION = 0.500
+FRAME_SIZE = 0.14
 
-##SOUND STANDARDIZATION
+##SOUND STANDARDIZATIO
 STD_PITCH = 55 #G3
 BPM = 100.0 #100bpm
 
 ##FOLDERS
 PRE_AUDIO = "pre_audio"
-POST_SOUNDS = "post_sounds"
-POST_SNARE = "post_percussion2"
+POST_SOUNDS = "new_post_sounds"
+POST_PERCUSSION = "new_post_percussion"
 
 
-def concatenate_segments(x, onset_samples, pad_duration=0.500):
-    silence = np.zeros(int(pad_duration*SR)) # silence
+def concatenate_segments(x, onset_samples):
+    #silence = np.zeros(int(pad_duration*SR)) # silence
     frame_sz = min(np.diff(onset_samples))   # every segment has uniform frame size
     i = 0
     len_onsets = len(onset_samples)
     tone = []
-    while(((onset_samples[i+1])<20000) or (i < 1)):
+    while(((onset_samples[i+1])<30000) or (i < 1)): #20000
         z = x[onset_samples[i]:onset_samples[i+1]]
         tone = np.concatenate([tone, z])
         i = i+1
@@ -52,7 +53,7 @@ def concatenate_segments_snare(x, onset_samples, pad_duration=0.500):
 def speed_adjust(x_pre, sr):
     onset_env = librosa.onset.onset_strength(x_pre, sr=sr)
     tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr)
-    x_fast = librosa.effects.time_stretch(x_pre, tempo / BPM)
+    x_fast = librosa.effects.time_stretch(x_pre, BPM/tempo) #TODO
     return x_fast
     
 def extract_sound(path, song_name):
@@ -66,7 +67,7 @@ def extract_sound(path, song_name):
     onset_samples = librosa.frames_to_samples(onset_frames)
     #onset_times = librosa.frames_to_time(onset_frames, sr=sr)
     #clicks = librosa.clicks(times=onset_times, length=len(x))
-    concatenated_signal = concatenate_segments(x, onset_samples, 0.500)
+    concatenated_signal = concatenate_segments(x, onset_samples)
     print(len(concatenated_signal))
 
     if (len(concatenated_signal) > 4096): #10000
@@ -79,7 +80,6 @@ def extract_sound(path, song_name):
         librosa.output.write_wav(POST_SOUNDS+'/'+song_name, y, sr)
         
     
-
 def extract_features(x):
     if(len(x) > 0):
         energy = sp.linalg.norm(x)
@@ -94,8 +94,11 @@ def extract_snare(path, song_name):
     found_i = 0
     for i in range(0, int((len(x) / main_struct_frame))):
         frame = i*main_struct_frame
+        
+        #hackthis
         #frame_energy = librosa.feature.rmse(y=x[frame:frame+main_struct_frame])
         #frame_energy = np.max(frame_energy[0])
+        
         frame_energy = extract_features(x[frame:frame+main_struct_frame])
         if (frame_energy > max_frame_energy):
             found_i = i
@@ -105,30 +108,31 @@ def extract_snare(path, song_name):
     #x = speed_adjust(x, sr)
     
     ###quick hack for second wave of files
-    found_i = 0
+    #found_i = 0
+    
     x = x[(found_i*main_struct_frame):((found_i+1)*main_struct_frame)]
-    print(len(x[(found_i*main_struct_frame):((found_i+1)*main_struct_frame)]))
+    print(len(x))
 
     X = librosa.stft(x)
     H, P = librosa.decompose.hpss(X, power=3.0, margin=(1,2))
-    #h = librosa.istft(H)
     p = librosa.istft(P)
 
-    onset_frames = librosa.onset.onset_detect(p, sr=sr, delta=0.04, wait=4)
+    onset_frames = librosa.onset.onset_detect(p, sr=sr, delta=0.08, wait=3) #0.04 #4
     #onset_times = librosa.frames_to_time(onset_frames, sr=sr)
     onset_samples = librosa.frames_to_samples(onset_frames)
     
-    frame_sz = int(SR*0.090)
+    frame_sz = int(SR*FRAME_SIZE) #0.090
     f_energy = np.array([extract_features(p[i:i+frame_sz]) for i in onset_samples])
 
     median_energy = np.median(f_energy)
     print(f_energy)
     silence = np.zeros(int(PAD_DURATION*SR)) #silence
     frame_sz = min(np.diff(onset_samples))   #every segment has uniform frame size
+    frame_sz_long = int(frame_sz*1.2)
     for i, onset in enumerate(onset_samples):
         if (f_energy[i] > median_energy):
-            sample = np.concatenate([p[onset:onset+frame_sz], silence]) # pad segment with silence
-            librosa.output.write_wav(POST_SNARE+'/'+song_name+'_'+str(f_energy[i])+'_'+str(i)+".wav", sample, SR)
+            sample = np.concatenate([p[onset:onset+frame_sz_long], silence]) # pad segment with silence
+            librosa.output.write_wav(POST_PERCUSSION+'/'+song_name+'_'+str(f_energy[i])+'_'+str(i)+".wav", sample, SR)
 
         
 def main():

@@ -34,15 +34,16 @@ $(document).ready(function() {
             console.log('ERRROR!1111');
             return;
         }
-        $.post('/api/generate_melody', {beat_filename: drumbeat,
-                    sound_melody: selected['sound'],
-                    notes_melody: JSON.stringify(noteArray)}, function(data) {
+        $.post('/api/generate_melody', {
+			beat_filename: drumbeat,
+			sound_melody: selected['sound'],
+			notes_melody: JSON.stringify(noteArray)
+		}, function(data) {
             var $div = $('<div>', {class: 'element row'}),
                 $divAudio = $('<div>', {class: 'col-4'}),
                 $divLink = $('<div>', {class: 'col-8'}),
                 $link = $('<a>', {href: 'https://100bpm.org/tmp/' + data}),
-                $audio = $('<audio>', {controls: 'controls'}),
-                $source = $('<source>', {src: data + 'ogg', type: 'audio/wav'});
+                $audio = load_audio('/tmp/' + data);
             $link.text('Download the song');
             $divLink.append($link);
             $audio.append($source);
@@ -50,16 +51,20 @@ $(document).ready(function() {
             $div.append($divAudio);
             $div.append($divLink);
             $('#records').append($div);
+			drumbeat = data;
+			load_beat_loop('/tmp/' + drumbeat);
+			clear_melody();
         });
     });
-    $('#record').on('click', function() {
-        var hasKick = !!selected['sound'];
-        if (!drumbeat || !hasKick) {
-            console.log('No drumbeat');
-            return;
-        }
+    $('#clear_notes').on('click', function() {
+        //var hasKick = !!selected['sound'];
+        //if (!drumbeat || !hasKick) {
+        //    console.log('No drumbeat');
+        //    return;
+        //}
         //load_note_sounds('/sounds/' + idToNames[selected['sound']]);
        // load_beat_loop('/tmp/' + drumbeat);
+			clear_melody();
     });
 });
 

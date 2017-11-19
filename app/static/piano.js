@@ -60,8 +60,10 @@ function play_beat_loop() {
 			var cn = currentNoteArray[index];
 			setTimeout(function() {
 				var a = note_sounds[cn[0]];
-				a.currentTime = 0;
-				a.play();
+				if(a) {
+					a.currentTime = 0;
+					a.play();
+				}
 			}, cn[1]);
 		})(i);
 	}

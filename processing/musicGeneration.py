@@ -186,9 +186,14 @@ def generate_drumbeat(sound_kick, sound_snare, notes_kick, notes_snare, output_f
     #audio = audio + (reverbed_audio * 0.3) #Mix reverb
     librosa.output.write_wav(output_filename, audio, SR)
 
-    
+def generate_song_from_drumbeat(sound_melody, notes_melody, drumbeat_filename, output_filename):
+    instrumental = generate_melody(sound_melody, np.array(notes_melody))
+    instrumental = instrumental + (reverb(instrumental, SR) * 0.1) #Mix reverb
+    drumbeat, sr = librosa.load(drumbeat_filename, sr=SR)
+    audio = instrumental + drumbeat
+    librosa.output.write_wav(output_filename, audio, SR)
+ 
 def generate_song(sound_melody, sound_kick, sound_snare, notes_melody, notes_kick, notes_snare, output_filename):
-    
     instrumental = generate_melody(sound_melody, np.array(notes_melody))
     kicks = generate_kicks(sound_kick, notes_kick)
     snares = generate_snares(sound_snare, notes_snare)

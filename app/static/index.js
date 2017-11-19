@@ -10,7 +10,7 @@ $(document).ready(function() {
             valueInTypeInput[type] = $(this).val();
             getAudioFiles(type, $(this));
         }
-    });   
+    });
     $('#generateDrumbeat').on('click', function() {
         var hasSnare = !!selected['snare'];
         var hasKick = !!selected['kick'];
@@ -25,7 +25,7 @@ $(document).ready(function() {
             {sound_kick: selected['kick'], sound_snare: selected['snare']},
             function(data) {
                 drumbeat = data;
-		load_beat_loop('/tmp/' + drumbeat);
+				load_beat_loop('/tmp/' + drumbeat);
             });
     }); 
     $('#send').on('click', function(){
@@ -58,7 +58,7 @@ $(document).ready(function() {
             console.log('No drumbeat');
             return;
         }
-        load_note_sounds('/sounds/' + idToNames[selected['sound']]);
+        //load_note_sounds('/sounds/' + idToNames[selected['sound']]);
        // load_beat_loop('/tmp/' + drumbeat);
     });
 });
@@ -112,8 +112,12 @@ function reloadAudioElements(audioFiles, type) {
         $selector.on('change', function(e) {
             var name = $(this).attr("value");
             var checked = $(this).prop('checked');
-            if (checked)
+            if(checked) {
                 selected[type] = name;
+				if(type == 'sound') {
+					load_note_sounds('/sounds/' + idToNames[name]);
+				}
+			}
         });
         $('#' + type + 'Files').append($div);
     }

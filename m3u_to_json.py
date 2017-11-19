@@ -18,7 +18,6 @@ paths = {
 dir_list = { s: [ t for t in os.listdir(p) if t[-4:] == '.wav' ] for s,p in paths.items() }
 
 image_dir_list = os.listdir('app/sounds/post_sounds_covers')
-print(image_dir_list)
 
 m3u = Queue()
 for line in fileinput.input():

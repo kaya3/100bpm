@@ -25,6 +25,7 @@ $(document).ready(function() {
             {sound_kick: selected['kick'], sound_snare: selected['snare']},
             function(data) {
                 drumbeat = data;
+			stop_beat_loop();
 				load_beat_loop('/tmp/' + drumbeat);
             });
     }); 
@@ -51,6 +52,7 @@ $(document).ready(function() {
             $div.append($divLink);
             $('#records').append($div);
 			drumbeat = data;
+			stop_beat_loop();
 			load_beat_loop('/tmp/' + drumbeat);
 			clear_melody();
         });

@@ -79,7 +79,7 @@ function stop_beat_loop() {
 
 function get_time() {
 	// quantized to multiples of 300
-	var t = (new Data).getTime();
+	var t = (new Date).getTime();
 	return 300 * Math.round((t - current_offset) / 300);
 }
 

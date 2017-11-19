@@ -1,84 +1,125 @@
 var selected = {};
-var beats = {};
-
-$(document).on('click', '.dropdown-menu', function(e) {
-	// console.log(e.target.text);
-	$('#send').show();
-	$('#sendError').hide();
-	selected = {};
-	$('#audioFiles').empty();
-	$.get('../api/search', {t: 'sound', q: e.target.text}, function(data) {
-		console.log(data);
-		var audioFiles = [];
-		var parsedData = JSON.parse(data);
-		for (var song of parsedData) {
-			var songName = song.filename/*.split(' ').join('%20')*/;
-			audioFiles.push({
-				name: '../sounds/' + songName + '.ogg', 
-				id: song.id, 
-				song_name: song.song_name,
-				artist: song.artist
-			});
-			console.log(JSON.stringify(song));
-			beats[songName] = song;
-		}
-		reloadAudio(audioFiles);
-	});
-
-	e.preventDefault();
+var drumbeat;
+var idToNames = {};
+var valueInTypeInput = {};
+$(document).ready(function() {
+    $('input').changeOrDelayedKey(function(e) {
+        e.preventDefault();    
+        var type = $(this).attr("sound");
+        if (type && (!valueInTypeInput[type] || valueInTypeInput[type] !== $(this).val())) {
+            valueInTypeInput[type] = $(this).val();
+            getAudioFiles(type, $(this));
+        }
+    });   
+    $('#generateDrumbeat').on('click', function() {
+        var hasSnare = !!selected['snare'];
+        var hasKick = !!selected['kick'];
+        if (!hasKick || !hasSnare) {
+            $('#drumbeatError').text('To generate the drumbeat you also need: ' 
+                + hasKick ? '' : 'kick '
+                + hasSnare ? '' : 'snare ');
+            $('#drumbeatError').show();
+            return;
+        }
+        $.post('/api/generate_beat', 
+            {sound_kick: selected['kick'], sound_snare: selected['snare']},
+            function(data) {
+                drumbeat = data;
+		load_beat_loop('/tmp/' + drumbeat);
+            });
+    }); 
+    $('#send').on('click', function(){
+        var noteArray = getCurrentNotesArray();
+        if (noteArray.length === 0 || !drumbeat || !selected['sound']) {
+            console.log('ERRROR!1111');
+            return;
+        }
+        $.post('/api/generate_melody', {beat_filename: drumbeat,
+                    sound_melody: selected['sound'],
+                    notes_melody: JSON.stringify(noteArray)}, function(data) {
+            var $div = $('<div>', {class: 'element row'}),
+                $divAudio = $('<div>', {class: 'col-4'}),
+                $divLink = $('<div>', {class: 'col-8'}),
+                $link = $('<a>', {href: 'https://100bpm.org/tmp/' + data}),
+                $audio = $('<audio>', {controls: 'controls'}),
+                $source = $('<source>', {src: data + 'ogg', type: 'audio/wav'});
+            $link.text('Download the song');
+            $divLink.append($link);
+            $audio.append($source);
+            $divAudio.append($audio);
+            $div.append($divAudio);
+            $div.append($divLink);
+            $('#records').append($div);
+        });
+    });
+    $('#record').on('click', function() {
+        var hasKick = !!selected['sound'];
+        if (!drumbeat || !hasKick) {
+            console.log('No drumbeat');
+            return;
+        }
+        load_note_sounds('/sounds/' + idToNames[selected['sound']]);
+       // load_beat_loop('/tmp/' + drumbeat);
+    });
 });
 
-function reloadAudio(audioFiles) {
-	for (var file of audioFiles) {
-		var $div = $('<div>', {class: 'element row'}),
-			$divPick = $('<div>', {class: 'col-1'}),
-			$divName = $('<div>', {class: 'col-4'}),
-			$divAuthor = $('<div>', {class: 'col-4'}),
-			$divMusic = $('<div>', {class: 'col-3'}),
-			$audio = $('<audio>', {controls: 'controls'}),
-			$source = $('<source>', {src: file.name, type: 'audio/wav'}),
-			$selector = $('<input>', {
-				type: 'radio', name: 'nameRadio',
-				value: file.id, class:'form-check-input'
-			});
-		
-		$divPick.append($selector);
-		$audio.text("Your browser does not support the audio element.");
-		$audio.append($source);
-		$divMusic.append($audio);
-		$divName.text(file.song_name);
-		$divAuthor.text(file.artist);
-		$div.append($divPick);
-		$div.append($divName);
-		$div.append($divAuthor);
-		$div.append($divMusic);
-		$selector.on('change', function(e) {
-			var name = $(this).attr("value");
-			var checked = $(this).prop('checked');
-			if (checked) {
-				selected[name] = checked;
-			} else {
-				delete selected[name];
-			}
-			console.log(JSON.stringify(selected));
-		});
-		$('#audioFiles').append($div);
-	}
+function getAudioFiles(type, e) {
+    $('#sendError').hide();
+    $('#' + type + 'Files').empty();
+    $.get('/api/search', {t: type, q: e.val()}, function(data) {
+        var audioFiles = [];
+        var parsedData = JSON.parse(data);
+        for (var song of parsedData) {
+            var songName = song.filename;
+            audioFiles.push({
+                name: '/sounds/' + songName + '.ogg', 
+                id: song.id, 
+                song_name: song.song_name,
+                artist: song.artist
+            });
+            idToNames[song.id] = songName;
+            console.log(JSON.stringify(song));
+        }
+        reloadAudioElements(audioFiles, type);
+    });
 }
 
-$(document).on('click', '#send', function(e) {
-	if(Object.keys(selected).length === 0 || currentNoteArray.length === 0) {
-		$('#sendError').show();
-		return;
-	}
-	console.log(JSON.stringify(currentNoteArray));
-	var selectedId = Object.keys(selected)[0];
-	$.post('../api/generate_track', {
-		sound_melody: selectedId,
-		sound_kick: 144,
-		sound_snare: 135,
-		notes_melody: JSON.stringify(currentNoteArray)
-	}, function(data) {
-		console.log(JSON.stringify(data));
-	});
-});
+function reloadAudioElements(audioFiles, type) {
+    for (var file of audioFiles) {
+        var $div = $('<div>', {class: 'element row'}),
+            $divPick = $('<div>', {class: 'col-1'}),
+            $divThumb = $('<div>', {class: 'col-1'}),
+            $divName = $('<div>', {class: 'col-3'}),
+            $divAuthor = $('<div>', {class: 'col-4'}),
+            $divMusic = $('<div>', {class: 'col-3'}),
+            $image = $('<img>', {src: '/default-record-thumbnail.jpg', width: '32', height: '32'}),
+            $audio = $('<audio>', {controls: 'controls'}),
+            $source = $('<source>', {src: file.name, type: 'audio/wav'}),
+            $selector = $('<input>', {type: 'radio', name: 'nameRadio',
+                     value: file.id, class:'form-check-input'});
+        $divPick.append($selector);
+        $divThumb.append($image);
+        $audio.text("Your browser does not support the audio element.");
+        $audio.append($source);
+        $divMusic.append($audio);
+        $divName.text(file.song_name);
+        $divAuthor.text(file.artist);
+        $div.append($divPick);
+        $div.append($divThumb);
+        $div.append($divName);
+        $div.append($divAuthor);
+        $div.append($divMusic);
+        $selector.on('change', function(e) {
+            var name = $(this).attr("value");
+            var checked = $(this).prop('checked');
+            if (checked)
+                selected[type] = name;
+        });
+        $('#' + type + 'Files').append($div);
+    }
+}
+                          
+$( document ).ready(function() {
+    $( "#accordion" ).accordion({heightStyle: 'content'});
+} );
+

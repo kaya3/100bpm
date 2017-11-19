@@ -15,7 +15,9 @@ paths = {
 	'snare': 'app/sounds/post_snares'
 }
 
-dir_list = { s: os.listdir(p) for s,p in paths.items() }
+dir_list = { s: [ t for t in os.listdir(p) if t[-4:] == '.wav' ] for s,p in paths.items() }
+
+image_dir_list = [ t for t in os.listdir('app/sounds/post_sounds_covers') if t[-4:] == '.wav' ]
 
 m3u = Queue()
 for line in fileinput.input():
@@ -49,14 +51,20 @@ while not m3u.empty():
 	#		title = before
 	#		artist = artist + spl + after
 	
+	image_filename=None
+	for filename in image_dir_list:
+		if filename.startswith(filename_prefix[:-4]):
+			image_filename = 'sounds/post_sounds_covers/' + filename
+	
 	songs.append({
 		'id': song_id,
 		'filename_prefix': filename_prefix,
 		'title': title,
-		'artist': artist
+		'artist': artist,
+		'image_filename': image_filename
 	})
 	
-	song = Song(filename_prefix, title, artist)
+	song = Song(filename_prefix, title, artist, image_filename)
 	db.session.add(song)
 	db.session.flush()
 	

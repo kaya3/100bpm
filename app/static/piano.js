@@ -75,11 +75,6 @@ function stop_beat_loop() {
 	beat_loop_2 = null;
 }
 
-function clear_recording() {
-	newNoteArray = [];
-	currentNoteArray = [];
-}
-
 function get_time() {
 	// quantized to multiples of 300
 	return 300 * Math.round(1000*current_beat_loop.currentTime / 300);
@@ -105,6 +100,11 @@ var keyToPitch = {
 	186: 64,
 	222: 65,
 };
+
+function clear_melody() {
+	currentNoteArray = [];
+	newNoteArray = [];
+}
 
 var currentNotes = {}, currentNoteArray = [], newNoteArray = [];
 document.addEventListener('keydown', function(e) {
@@ -135,10 +135,14 @@ document.addEventListener('keyup', function(e) {
 	}
 });
 
-$(document).ready(function() {
-	//test
-	load_note_sounds('https://100bpm.org/sounds/post_sounds/01ShowNoLovefeat.WrdUp.wav');
-	load_beat_loop('https://100bpm.org/tmp/11c37a7b-7e58-4bb9-81ef-9e3ac425341b.wav');
-});
+function getCurrentNotesArray() {
+	return currentNoteArray;
+}
+
+// $(document).ready(function() {
+// 	//test
+// 	//load_note_sounds('https://100bpm.org/sounds/post_sounds/01ShowNoLovefeat.WrdUp.wav');
+// 	//load_beat_loop('https://100bpm.org/tmp/11c37a7b-7e58-4bb9-81ef-9e3ac425341b.wav');
+// });
 
 

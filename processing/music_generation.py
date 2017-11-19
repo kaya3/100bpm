@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
 Created on Sat Nov 18 14:32:47 2017
@@ -169,17 +169,17 @@ def generate_single_pitches(path):
        
     #get pitch of sample_sound
     sample_pitch = get_pitch(y, sr)
-            
+    output_path = path.replace('/post_sounds/', '/post_sounds_pitched/')
     #iterating through the notes
-    for i in range(48,65):
+    for i in range(48,66):
         pitch = i
         raw_sample_pitch = sample_pitch % 12
         raw_pitch = pitch % 12
         if(pitch >= 60):
             raw_pitch = (pitch % 12)+12
         pitched_y = librosa.effects.pitch_shift(y, sr, n_steps=raw_pitch-raw_sample_pitch)
-        songname = path.split("/")[-1]
-        librosa.output.write_wav("post_sounds_pitched/"+songname+"_"+str(i)+".wav", pitched_y, SR)
+        output_filename = output_path + '_' + str(i) + '.wav'
+        librosa.output.write_wav(output_filename, pitched_y, SR)
 
 def generate_drumbeat(sound_kick, sound_snare, notes_kick, notes_snare, output_filename):
     kicks = generate_kicks(sound_kick, notes_kick)
@@ -188,10 +188,10 @@ def generate_drumbeat(sound_kick, sound_snare, notes_kick, notes_snare, output_f
     #audio = audio + (reverbed_audio * 0.3) #Mix reverb
     librosa.output.write_wav(output_filename, audio, SR)
 
-def generate_song_from_drumbeat(sound_melody, notes_melody, drumbeat_filename, output_filename):
+def generate_song_from_drumbeat(sound_melody, notes_melody, beat_filename, output_filename):
     instrumental = generate_melody(sound_melody, np.array(notes_melody))
     instrumental = instrumental + (reverb(instrumental, SR) * 0.1) #Mix reverb
-    drumbeat, sr = librosa.load(drumbeat_filename, sr=SR)
+    drumbeat, sr = librosa.load(beat_filename, sr=SR)
     audio = instrumental + drumbeat
     librosa.output.write_wav(output_filename, audio, SR)
  
@@ -205,10 +205,13 @@ def generate_song(sound_melody, sound_kick, sound_snare, notes_melody, notes_kic
     audio = audio + (reverbed_audio * 0.1) #Mix reverb
     librosa.output.write_wav(output_filename, audio, SR)
     
-"""
-#if __name__ == '__main__':
-	generate_single_pitches("new_post_sounds/01 Somebody (feat. Jeremih).wav")
-	generate_song(
+
+if __name__ == '__main__':
+	import os
+	for f in os.listdir('/var/www/100bpm/app/sounds/post_sounds'):
+		fp = '/var/www/100bpm/app/sounds/post_sounds/' + f
+		generate_single_pitches(fp)
+"""	generate_song(
 		"new_post_sounds/01 Somebody (feat. Jeremih).wav",
 		"post_kicks/65 Touchin, Lovin (feat. Nicki Minaj).wav_20.8808708191_25.wav",
 		"post_snares/16 Loin (feat. Dany synthé) [Pilule Violette].wav_9.9791841507_9.wav",
@@ -217,4 +220,5 @@ def generate_song(sound_melody, sound_kick, sound_snare, notes_melody, notes_kic
 		[20],
 		"melody.wav"
 	)
-  """  
+"""
+

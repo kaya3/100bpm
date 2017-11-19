@@ -1,3 +1,47 @@
+body {
+    background-color:#eeeeee;
+}
+
 .element {
-    margin: 20px;
+    width:100%;
+    height: auto;
+    font-size:16px;
+    line-height: 37px;
+}
+
+#snareFiles .element {
+    border-bottom: solid #000000;
+    border-bottom-width: 1px;
+}
+    
+#kickFiles .element {
+    border-bottom: solid #000000;
+    border-bottom-width: 1px;
+}
+
+.col-1 {
+padding-top:10px;
+}
+.container {
+    text-align:center;
+    margin:0 auto;
+    display: inline;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+h3 {
+    background-color:#fff;
+    font-size: 20px !important;
+}
+
+.ui-widget-content {
+    border: none !important;
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+    font-weight: normal !important;
+    color: #000000 !important;
+    background: #eeeeee !important;
+    padding: 10px !important;
 }

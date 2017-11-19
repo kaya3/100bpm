@@ -8,11 +8,13 @@ class Song(db.Model):
 	artist = db.Column('artist', db.String(256), nullable=True)
 	title = db.Column('title', db.String(256), nullable=True)
 	sounds = db.relationship('Sound', backref='song', lazy='dynamic')
+	image_filename = db.Column('image_filename', db.String(256), nullable=True)
 	
-	def __init__(self, filename_prefix, artist, title):
+	def __init__(self, filename_prefix, artist, title, image_filename=None):
 		self.filename_prefix = filename_prefix
 		self.artist = artist
 		self.title = title
+		self.image_filename = image_filename
 
 class Sound(db.Model):
 	@staticmethod
@@ -40,6 +42,8 @@ class Sound(db.Model):
 		if self.song:
 			data['artist'] = self.song.artist
 			data['song_name'] = self.song.title
+			if self.song.image_filename:
+				data['image'] = self.song.image_filename
 		tags = list(self.tags)
 		if tags:
 			data['tags'] = [ t.tag_name for t in tags ]

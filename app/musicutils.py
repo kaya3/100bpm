@@ -1,6 +1,6 @@
 import random
 import uuid
-import process
+import subprocess
 
 def unique_wav_filename():
 	return str(uuid.uuid4()) + '.wav'
@@ -21,13 +21,13 @@ def random_kick_sequence():
 	])
 	
 	add16th = random.random()
-	if add16th > 0.8:
+	if add16th > 0.7:
 		kicks.add(2250)
-		if add16th > 0.95:
+		if add16th > 0.85:
 			kicks.add(1050)
-	elif add16th < 0.2:
+	elif add16th < 0.3:
 		kicks.add(3750)
-		if add16th < 0.05:
+		if add16th < 0.15:
 			kicks.add(1350)
 	
 	return kicks

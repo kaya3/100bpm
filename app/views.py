@@ -5,7 +5,7 @@ import json
 import re
 import os
 
-from processing import generate_song
+from processing import generate_drumbeat, generate_song_from_drumbeat
 from app.models import *
 from app.decorators import crossdomain
 from app.musicutils import *
@@ -70,7 +70,7 @@ def generate_beat():
 		# convert to ogg
 		convert_to_ogg(full_path_filename)
 		
-		return '/tmp/' + generated_filename
+		return generated_filename
 	except:
 		import sys, traceback
 		print('Exception when generating drumbeat:')
@@ -87,12 +87,12 @@ def generate_melody():
 	
 	try:
 		params = dict()
-		if 'beat_filename' not in request.form[p]:
+		if 'beat_filename' not in request.form:
 			return 'Request must have beat_filename=... field.', 400
-		elif not re.match(r'/^[a-zA-Z0-9\-]+\.wav$/', request.form['beat_filename']):
+		elif not re.match(r'^[a-zA-Z0-9\-]+\.wav$', request.form['beat_filename']):
 			return 'Malformed beat filename.', 400
 		
-		beat_filename = request['beat_filename']
+		beat_filename = request.form['beat_filename']
 		full_path_beat_filename = os.path.join(BASE_DIR, 'tmp', beat_filename)
 		if not os.path.isfile(full_path_beat_filename):
 			return 'Beat file not found.', 400
@@ -108,10 +108,11 @@ def generate_melody():
 			if not isinstance(params[p], list) or not all(
 				isinstance(n, list)
 				and len(n) == 3
-				and all(isinstance(i, int) for i in n)
+				and all(isinstance(i, (int,str)) for i in n)
 				for n in params[p]
 			):
 				return 'Request field {} must be a list of notes.'.format(p), 400
+			params[p] = [ [ int(i) for i in n ] for n in params[p] ]
 		
 		for p in p_sounds:
 			if not isinstance(params[p], int):
@@ -131,7 +132,7 @@ def generate_melody():
 		# convert to ogg
 		convert_to_ogg(full_path_filename)
 		
-		return '/tmp/' + generated_filename
+		return generated_filename
 	except:
 		import sys, traceback
 		print('Exception when generating melody:')
@@ -144,13 +145,13 @@ def generate_melody():
 def add_tag():
 	if 'sound' not in request.form or not request.form['sound']:
 		return 'Request must have a sound=... field.', 400
-	if not re.match('/^[1-9][0-9]*$/', request.form['sound']):
+	if not re.match(r'^[1-9][0-9]*$', request.form['sound']):
 		return 'Malformed sound id.', 400
 	sound_id = int(request.form['sound'])
 	if 'tag_name' not in request.form or not request.form['tag_name']:
 		return 'Request must have a tag_name=... field.', 400
 	tag_name = request.form['tag_name'].strip()
-	if not re.match('/^[a-zA-Z ]+$/', tag_name):
+	if not re.match(r'^[a-zA-Z ]+$', tag_name):
 		return 'No special characters allowed in tag name.', 400
 	
 	sound = Sound.query.get(sound_id)

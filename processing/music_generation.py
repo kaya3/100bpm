@@ -8,8 +8,9 @@ Created on Sat Nov 18 14:32:47 2017
 
 import numpy as np
 import scipy as sp
-import matplotlib.pyplot as plt, IPython.display as ipd
-import librosa, librosa.display
+#import matplotlib.pyplot as plt, IPython.display as ipd
+import librosa
+#import librosa.display
 import random
 import os
 

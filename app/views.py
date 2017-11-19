@@ -3,23 +3,145 @@ from app import app,db
 from flask import request
 import json
 import re
+import os
 
+from processing import generate_song
 from app.models import *
 from app.decorators import crossdomain
-
-@app.route('/')
-def index():
-	return 'Hello, world!'
+from app.musicutils import *
+from config import BASE_DIR
 
 @app.route('/api/search')
 @crossdomain(origin='*')
 def search():
+	if 't' not in request.args:
+		return 'Request must have t=... parameter.', 400
 	if 'q' not in request.args:
 		return 'Request must have q=... parameter.', 400
+	t = request.args['t'].strip()
 	q = request.args['q'].strip()
+	if t not in ['sound', 'kick', 'snare']:
+		return 'Invalid sound type.', 400
 	if not q:
 		return 'Empty search string.', 400
-	return json.dumps([ s.get_data() for s in Sound.search(q) ])
+	return json.dumps([ s.get_data() for s in Sound.search(t, q) ])
+
+@app.route('/api/generate_beat', methods=['POST'])
+@crossdomain(origin='*')
+def generate_beat():
+	p_hits = ['notes_kick', 'notes_snare']
+	p_sounds = ['sound_kick', 'sound_snare']
+	
+	try:
+		params = dict()
+		
+		#TODO: generate randomly, or get from user
+		params['notes_kick'] = random_kick_sequence()
+		params['notes_snare'] = random_snare_sequence()
+		
+		#TODO: get hits from user?
+		for p in p_sounds:
+			if p not in request.form or not request.form[p]:
+				return 'Request must have {}=... field.'.format(p), 400
+			params[p] = json.loads(request.form[p])
+		
+		#for p in p_hits:
+		#	if not isinstance(params[p], list) or not all(
+		#		isinstance(i, int)
+		#		for i in params[p]
+		#	):
+		#		return 'Request field {} must be a list of hits.'.format(p), 400
+		
+		for p in p_sounds:
+			if not isinstance(params[p], int):
+				return 'Request field {} must be a sound id.'.format(p), 400
+			sound = Sound.query.get(params[p])
+			if not sound:
+				return 'No such sound id: {}.'.format(params[p]), 400
+			params[p] = os.path.join(BASE_DIR, 'app', 'sounds', sound.filename)
+		
+		generated_filename = unique_wav_filename()
+		full_path_filename = os.path.join(BASE_DIR, 'tmp', generated_filename)
+		params['output_filename'] = full_path_filename
+		
+		# generate track
+		generate_song(**params)
+		
+		# convert to ogg
+		convert_to_ogg(full_path_filename)
+		
+		return '/tmp/' + generated_filename
+	except:
+		import sys, traceback
+		print('Exception when generating track:')
+		print('-'*60)
+		traceback.print_exc(file=sys.stdout)
+		print('-'*60)
+		return 'Error when generating track.', 400
+
+@app.route('/api/generate_track', methods=['POST'])
+@crossdomain(origin='*')
+def generate_track():
+	p_notes = ['notes_melody']
+	p_hits = ['notes_kick', 'notes_snare']
+	p_sounds = ['sound_melody', 'sound_kick', 'sound_snare']
+	
+	try:
+		params = dict()
+		
+		#TODO: generate randomly, or get from user
+		
+		params['notes_kick'] = random_kick_sequence()
+		params['notes_snare'] = random_snare_sequence()
+		
+		#TODO: get hits from user?
+		for p in p_notes + p_sounds:
+			if p not in request.form or not request.form[p]:
+				return 'Request must have {}=... field.'.format(p), 400
+			params[p] = json.loads(request.form[p])
+		
+		for p in p_notes:
+			if not isinstance(params[p], list) or not all(
+				isinstance(n, list)
+				and len(n) == 3
+				and all(isinstance(i, int) for i in n)
+				for n in params[p]
+			):
+				return 'Request field {} must be a list of notes.'.format(p), 400
+		
+		#for p in p_hits:
+		#	if not isinstance(params[p], list) or not all(
+		#		isinstance(i, int)
+		#		for i in params[p]
+		#	):
+		#		return 'Request field {} must be a list of hits.'.format(p), 400
+		
+		for p in p_sounds:
+			if not isinstance(params[p], int):
+				return 'Request field {} must be a sound id.'.format(p), 400
+			sound = Sound.query.get(params[p])
+			if not sound:
+				return 'No such sound id: {}.'.format(params[p]), 400
+			params[p] = os.path.join(BASE_DIR, 'app', 'sounds', sound.filename)
+		
+		generated_filename = unique_wav_filename()
+		full_path_filename = os.path.join(BASE_DIR, 'tmp', generated_filename)
+		params['output_filename'] = full_path_filename
+		
+		# generate track
+		generate_song(**params)
+		
+		# convert to ogg
+		convert_to_ogg(full_path_filename)
+		
+		return '/tmp/' + generated_filename
+	except:
+		import sys, traceback
+		print('Exception when generating track:')
+		print('-'*60)
+		traceback.print_exc(file=sys.stdout)
+		print('-'*60)
+		return 'Error when generating track.', 400
 
 @app.route('/api/add_tag', methods=['POST'])
 def add_tag():

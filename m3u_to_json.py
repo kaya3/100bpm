@@ -6,6 +6,9 @@ import json
 import re
 from queue import Queue
 
+from app import db
+from app.models import *
+
 paths = {
 	'sound': 'app/sounds/post_sounds',
 	'kick': 'app/sounds/post_kicks',
@@ -25,23 +28,26 @@ if first_line != '#EXTM3U':
 
 songs = []
 sound_files = []
-tags = []
 
 song_id = 1
 sound_id = 1
 
 while not m3u.empty():
-	metadata = m3u.get().strip()
+	metadata = m3u.get().strip().split(',', 1)[-1]
+	if ' - ' not in metadata:
+		print("Can't parse metadata:", metadata)
+		continue
+	
 	fullpath = m3u.get().strip()
 	filename_prefix = fullpath.split('/')[-1]
 	filename_prefix = re.sub(r'[^a-zA-Z0-9\.]', '', filename_prefix)
-	title, artist = metadata.split(',', 1)[-1].split(' - ', 1)
+	title, artist = metadata.split(' - ', 1)
 	
-	for spl in [' (feat. ', ' (Feat. ', ' (ft. ', ' (Ft. ']:
-		if spl in title and title[-1] == ')':
-			before, after = title.split(spl, 1)
-			title = before
-			artist = artist + spl + after
+	#for spl in [' (feat. ', ' (Feat. ', ' (ft. ', ' (Ft. ']:
+	#	if spl in title and title[-1] == ')':
+	#		before, after = title.split(spl, 1)
+	#		title = before
+	#		artist = artist + spl + after
 	
 	songs.append({
 		'id': song_id,
@@ -50,29 +56,35 @@ while not m3u.empty():
 		'artist': artist
 	})
 	
-	for tag, path in paths.items():
-		for filename in list(dir_list[tag]):
+	song = Song(filename_prefix, title, artist)
+	db.session.add(song)
+	db.session.flush()
+	
+	for sound_type, path in paths.items():
+		relative_path = path.split('/')[-1]
+		for filename in list(dir_list[sound_type]):
 			if filename.startswith(filename_prefix):
-				dir_list[tag].remove(filename)
+				dir_list[sound_type].remove(filename)
+				
+				sound = Sound(sound_type, relative_path + '/' + filename, song)
+				db.session.add(sound)
+				db.session.flush()
+				
 				sound_files.append({
 					'id': sound_id,
 					'song_id': song_id,
 					'filename': path + '/' + filename
 				})
-				tags.append({
-					'sound_id': sound_id,
-					'tag_name': tag
-				})
+				
 				sound_id += 1
 	song_id += 1
+
+db.session.commit()
 
 with open('json/songs.json', 'w') as f:
 	f.write(json.dumps(songs))
 
 with open('json/sounds.json', 'w') as f:
 	f.write(json.dumps(sound_files))
-
-with open('json/tags.json', 'w') as f:
-	f.write(json.dumps(tags))
 
 print(dir_list)

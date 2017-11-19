@@ -16,20 +16,22 @@ class Song(db.Model):
 
 class Sound(db.Model):
 	@staticmethod
-	def search(q):
+	def search(sound_type, q):
 		sounds = { t.sound for t in Tag.query.filter(Tag.tag_name == q.lower()) }
 		q = '%{}%'.format(q)
 		for song in Song.query.filter(Song.artist.ilike(q) | Song.title.ilike(q)):
 			sounds.update(song.sounds)
-		return list(sounds)
+		return [ s for s in sounds if s.sound_type == sound_type ]
 	
 	__tablename__ = 'sounds'
 	id = db.Column('id', db.Integer, primary_key=True)
+	sound_type = db.Column('sound_type', db.String(16), nullable=False)
 	filename = db.Column('filename', db.String(256), unique=True, nullable=False)
 	song_id = db.Column('song_id', db.Integer,  db.ForeignKey('songs.id'), nullable=True)
 	tags = db.relationship('Tag', backref='sound', lazy='dynamic')
 	
-	def __init__(self, filename, song=None):
+	def __init__(self, sound_type, filename, song=None):
+		self.sound_type = sound_type
 		self.filename = filename
 		self.song = song
 	

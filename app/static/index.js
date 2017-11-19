@@ -34,22 +34,25 @@ $(document).ready(function() {
             console.log('ERRROR!1111');
             return;
         }
-        $.post('/api/generate_melody', {beat_filename: drumbeat,
-                    sound_melody: selected['sound'],
-                    notes_melody: JSON.stringify(noteArray)}, function(data) {
+        $.post('/api/generate_melody', {
+			beat_filename: drumbeat,
+			sound_melody: selected['sound'],
+			notes_melody: JSON.stringify(noteArray)
+		}, function(data) {
             var $div = $('<div>', {class: 'element row'}),
                 $divAudio = $('<div>', {class: 'col-4'}),
                 $divLink = $('<div>', {class: 'col-8'}),
                 $link = $('<a>', {href: 'https://100bpm.org/tmp/' + data}),
-                $audio = $('<audio>', {controls: 'controls'}),
-                $source = $('<source>', {src: data + 'ogg', type: 'audio/wav'});
+                $audio = load_audio('/tmp/' + data);
             $link.text('Download the song');
             $divLink.append($link);
-            $audio.append($source);
             $divAudio.append($audio);
             $div.append($divAudio);
             $div.append($divLink);
             $('#records').append($div);
+			drumbeat = data;
+			load_beat_loop('/tmp/' + drumbeat);
+			clear_melody();
         });
     });
     $('#clear_notes').on('click', function() {
@@ -60,7 +63,7 @@ $(document).ready(function() {
         //}
         //load_note_sounds('/sounds/' + idToNames[selected['sound']]);
        // load_beat_loop('/tmp/' + drumbeat);
-		clear_melody();
+			clear_melody();
     });
 });
 
@@ -76,7 +79,8 @@ function getAudioFiles(type, e) {
                 name: '/sounds/' + songName + '.ogg', 
                 id: song.id, 
                 song_name: song.song_name,
-                artist: song.artist
+                artist: song.artist,
+                image: song.image
             });
             idToNames[song.id] = songName;
             console.log(JSON.stringify(song));
@@ -98,6 +102,9 @@ function reloadAudioElements(audioFiles, type) {
             $source = $('<source>', {src: file.name, type: 'audio/wav'}),
             $selector = $('<input>', {type: 'radio', name: 'nameRadio',
                      value: file.id, class:'form-check-input'});
+        if (file.image) {
+            $image.attr('src', file.image);
+        }
         $divPick.append($selector);
         $divThumb.append($image);
         $audio.text("Your browser does not support the audio element.");

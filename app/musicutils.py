@@ -6,7 +6,7 @@ def unique_wav_filename():
 	return str(uuid.uuid4()) + '.wav'
 
 def convert_to_ogg(full_path_filename):
-	process = subprocess.Popen(['ffmpeg', '-i', full_path_filename, full_path_filename + '.ogg'])
+	process = subprocess.Popen(['ffmpeg', '-i', full_path_filename, '-qscale:a', '8', full_path_filename + '.ogg'])
 	process.wait()
 	if process.returncode:
 		print(process.communicate(timeout=1))

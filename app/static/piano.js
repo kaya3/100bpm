@@ -77,7 +77,8 @@ function stop_beat_loop() {
 
 function get_time() {
 	// quantized to multiples of 300
-	return 300 * Math.round(1000*current_beat_loop.currentTime / 300);
+	var t = (new Data).getTime();
+	return 300 * Math.round((t - current_offset) / 300);
 }
 
 var keyToPitch = {

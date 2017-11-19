@@ -38,9 +38,9 @@ function play_beat_loop() {
 	}
 	for(var i = 0; i < newNoteArray.length; ++i) {
 		var nn = newNoteArray[i];
-		currentNoteArray = currentNoteArray.filter(function(cn) {
-			return cn[2] <= nn[1] || cn[1] >= nn[2];
-		});
+		//currentNoteArray = currentNoteArray.filter(function(cn) {
+		//	return cn[2] <= nn[1] || cn[1] >= nn[2];
+		//});
 		currentNoteArray.push(nn);
 	}
 	currentNotes = {};

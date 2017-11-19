@@ -52,14 +52,15 @@ $(document).ready(function() {
             $('#records').append($div);
         });
     });
-    $('#record').on('click', function() {
-        var hasKick = !!selected['sound'];
-        if (!drumbeat || !hasKick) {
-            console.log('No drumbeat');
-            return;
-        }
+    $('#clear_notes').on('click', function() {
+        //var hasKick = !!selected['sound'];
+        //if (!drumbeat || !hasKick) {
+        //    console.log('No drumbeat');
+        //    return;
+        //}
         //load_note_sounds('/sounds/' + idToNames[selected['sound']]);
        // load_beat_loop('/tmp/' + drumbeat);
+		clear_melody();
     });
 });
 

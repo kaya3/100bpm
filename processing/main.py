@@ -134,6 +134,35 @@ def extract_snare(path, song_name):
             sample = np.concatenate([p[onset:onset+frame_sz_long], silence]) # pad segment with silence
             librosa.output.write_wav(POST_PERCUSSION+'/'+song_name+'_'+str(f_energy[i])+'_'+str(i)+".wav", sample, SR)
 
+"""                        
+def extract_rythm(path, song_name):
+    print(path)
+    x, sr = librosa.load(path, sr=SR)
+    
+    X = librosa.stft(x)
+    H, P = librosa.decompose.hpss(X, power=3.0, margin=(1,2))
+    p = librosa.istft(P)
+        
+    #p = speed_adjust(x, sr)  #p
+    main_struct_frame = int(sr*(60/(BPM/8)))
+    max_frame_energy = 0
+    found_i = 0
+    for i in range(0, int((len(p) / main_struct_frame))):
+        frame = i*main_struct_frame
+        
+        frame_energy = extract_features(p[frame:frame+main_struct_frame])
+        if (frame_energy > max_frame_energy):
+            found_i = i
+            max_frame_energy = frame_energy
+            print(found_i)
+           
+    p = p[(found_i*main_struct_frame):((found_i+1)*main_struct_frame)]
+    
+    onset_frames = librosa.onset.onset_detect(p, sr=sr, backtrack=True, hop_length=512)
+    onset_times = librosa.frames_to_time(onset_frames, sr=sr)
+    clicks = librosa.clicks(times=onset_times, length=len(p))
+    librosa.output.write_wav("beat_detector_clicks.wav", p+clicks, SR)
+"""
         
 def main():
     print("Main")
@@ -144,7 +173,7 @@ def main():
                 path = os.path.join(subdir, file)
                 print(path)
                 #extract_snare(path,file)
-                extract_sound(path, file)
+                #extract_sound(path, file)
     
 main()
     

@@ -125,6 +125,7 @@ function reloadAudioElements(audioFiles, type) {
 				if(type == 'sound') {
 					load_note_sounds('/sounds/' + idToNames[name]);
 				}
+				$(this).closest('.container').next('.container').trigger('click');
 			}
         });
         $('#' + type + 'Files').append($div);

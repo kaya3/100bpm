@@ -14,5 +14,10 @@ Example beats:
 
 [R&B_Beat_4](https://100bpm.org/sounds/example_beats/R&B_Beat_4.ogg "R&B_Beat_1")
 
-More information about the technial details coming soon!
+Technical tutorials on the sound processing unit and beat generation unit:
+
+[Sound Processing](Techtutorial_SoundProcessing.ipynb "Sound Processing")
+
+[Beat Generation](Techtutorial_SoundProcessing.ipynb "Beat Generation")
+
 

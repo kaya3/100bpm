@@ -18,6 +18,6 @@ Technical tutorials on the sound processing unit and beat generation unit:
 
 [Sound Processing](Techtutorial_SoundProcessing.ipynb "Sound Processing")
 
-[Beat Generation](Techtutorial_SoundProcessing.ipynb "Beat Generation")
+[Beat Generation](Techtutorial_BeatGeneration.ipynb "Beat Generation")
 
 

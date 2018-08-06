@@ -6,13 +6,13 @@ This is a website to create 8-beat R&B instrumentals from sounds extracted from 
 
 Example beats:
 
-[R&B_Beat_1](https://100bpm.org/sounds/example_beats/R&B_Beat_1.ogg "R&B_Beat_1")
+[R&B_Beat_1](https://raw.githubusercontent.com/kaya3/100bpm/master/R%26B_Beat_1.ogg "R&B_Beat_1")
 
-[R&B_Beat_2](https://100bpm.org/sounds/example_beats/R&B_Beat_2.ogg "R&B_Beat_1")
+[R&B_Beat_2](https://raw.githubusercontent.com/kaya3/100bpm/master/R%26B_Beat_2.ogg "R&B_Beat_2")
 
-[R&B_Beat_3](https://100bpm.org/sounds/example_beats/R&B_Beat_3.ogg "R&B_Beat_1")
+[R&B_Beat_3](https://raw.githubusercontent.com/kaya3/100bpm/master/R%26B_Beat_3.ogg "R&B_Beat_3")
 
-[R&B_Beat_4](https://100bpm.org/sounds/example_beats/R&B_Beat_4.ogg "R&B_Beat_1")
+[R&B_Beat_4](https://raw.githubusercontent.com/kaya3/100bpm/master/R%26B_Beat_4.ogg "R&B_Beat_4")
 
 Technical tutorials on the sound processing unit and beat generation unit:
 
